@@ -2,21 +2,17 @@
 using System.Collections;
 
 public class MoveEntity : Entity {
-    public float speed;
     public Gun currentGun;
     protected Rigidbody2D body;
-    protected virtual void Start() {
+    public virtual void Start() {
         body = gameObject.GetComponent<Rigidbody2D>();
-        currentGun = gameObject.GetComponent<Pistol>();
-    }
-    protected void moveTowards(Vector2 target) {
-        body.velocity = target.normalized * speed;
-        lookAt(target);
+        if(currentGun == null)
+            currentGun = gameObject.GetComponentInChildren<Gun>();
     }
     protected void lookAt(Vector2 target) {
         if (target.Equals(Vector2.zero))
             return;
-        transform.rotation = Quaternion.Euler(new Vector3(0, 0, Mathf.Rad2Deg * Mathf.Atan(target.y / target.x) + (target.x < 0 ? 90 : -90)));
+        transform.rotation = Quaternion.LookRotation(Vector3.forward, target);
     }
     protected void shoot() {
         if(currentGun != null)
