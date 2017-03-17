@@ -21,5 +21,9 @@ public class MoveEntity : Entity {
 
         }
     }
+    protected void fireCont() {
+        if (currentGun != null)
+            currentGun.fireCont();
+    }
 
 }

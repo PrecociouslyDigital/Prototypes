@@ -2,44 +2,56 @@
 using System.Collections;
 
 public class Player : MoveEntity {
-    public float acceleration;
-    public float topSpeed;
     private Vector2 mousePos = Vector2.zero;
-    public EnergyBar energyBar;
+    public float speed;
 
-    public float maxEnergy;
-    public float energyRegenRate;
-    private float energy;
+    public float slowTimeSpeed = 0.1f;
+    private float fixedDeltaTime;
+
+    private float lastTime = 0;
 
     public float maxHealth;
     public float health;
     public override void Start() {
         base.Start();
-        energy = maxEnergy;
-        if (energyBar == null)
-            energyBar = GameObject.Find("EnergyBar").GetComponent<EnergyBar>();
         health = maxHealth;
+        fixedDeltaTime = Time.fixedDeltaTime;
     }
     void Update () {
-        if (!Input.GetMouseButton(1)) {
-            mousePos = (Vector2)Input.mousePosition - new Vector2(Screen.width / 2, Screen.height / 2);
-        }
-        Vector2 velocity = Vector2.MoveTowards(body.velocity, mousePos.normalized * topSpeed, acceleration * Time.deltaTime);
+        
+        mousePos = (Vector2)Input.mousePosition - new Vector2(Screen.width / 2, Screen.height / 2);
 
-        energy += energyRegenRate * Time.deltaTime;
-        energy -= (body.velocity - velocity).magnitude;
-        if(energy < 0) {
-            this.die();
-            Debug.Log("died of low energy");
-        }
-        if (energy > maxEnergy)
-            energy = maxEnergy;
-        energyBar.set(energy / maxEnergy);
+        Vector2 velocity = new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical")).normalized * speed;
 
         body.velocity = velocity;
-        this.lookAt(body.velocity);
+        if (Input.GetMouseButtonDown(1)) {
+            Time.timeScale = slowTimeSpeed;
+            Time.fixedDeltaTime = slowTimeSpeed * fixedDeltaTime;
+        }
+        if (Input.GetMouseButtonUp(1)) {
+            Time.timeScale = 1;
+            Time.fixedDeltaTime = fixedDeltaTime;
+        }
+        
+        if (Time.fixedDeltaTime != lastTime) {
+            Debug.Log("FixedDeltaTime at" + Time.fixedDeltaTime);
+            lastTime = fixedDeltaTime;
+        }
+        if (Input.GetMouseButton(1)) {
+            this.lookAt(mousePos);
+            
+        } else {
+            this.lookAt(body.velocity);
+        }
         if (Input.GetMouseButtonDown(0)) {
             this.shoot();
+            Time.timeScale = 1;
+            Time.fixedDeltaTime = fixedDeltaTime;
+        }
+        if (Input.GetMouseButton(0)) {
+            this.fireCont();
+            Time.timeScale = 1;
+            Time.fixedDeltaTime = fixedDeltaTime;
         }
 
         health += Time.deltaTime/2;
